@@ -91,6 +91,7 @@ export default class GooglePlacesAutocomplete extends Component {
         : this.props.listViewDisplayed,
     url: this.getRequestUrl(this.props.requestUrl),
     autoSelected: false,
+    clicked: false,
   });
 
   getRequestUrl = (requestUrl) => {
@@ -281,6 +282,9 @@ export default class GooglePlacesAutocomplete extends Component {
   };
 
   _onPress = (rowData) => {
+    this.setState({
+      clicked: true,
+    });
     if (
       rowData.isPredefinedPlace !== true &&
       this.props.fetchDetails === true
@@ -652,6 +656,11 @@ export default class GooglePlacesAutocomplete extends Component {
 
     if (onChangeText) {
       onChangeText(text);
+      if (text === "") {
+        this.setState({
+          clicked: false,
+        });
+      }
     }
   };
 
@@ -753,20 +762,30 @@ export default class GooglePlacesAutocomplete extends Component {
 
   _onBlur = () => {
     this.triggerBlur();
-
+    this.setState({
+      listViewDisplayed: false,
+    });
+    // typeof nextProps.text !== "undefined"
     if (
       !this.state.autoSelected &&
       this.props.autoSelectFirstResult &&
       this.state.hasResults &&
       this.state.dataSource[0]
     ) {
-      this.setState(
-        {
+      if (!this.state.clicked) {
+        this.setState(
+          {
+            autoSelected: true,
+            listViewDisplayed: false,
+          },
+          () => this._onPress(this.state.dataSource[0])
+        );
+      } else {
+        this.setState({
           autoSelected: true,
           listViewDisplayed: false,
-        },
-        () => this._onPress(this.state.dataSource[0])
-      );
+        });
+      }
     }
   };
 
